@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -21,7 +21,7 @@
 html,
 body {
   @apply m-0 p-0 bg-[#f8f8fa] scroll-pt-12;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -48,7 +48,7 @@ ul {
 
 .nft-name {
   @apply font-semibold text-black;
-  font-family: 'Inter';
+  font-family: "Inter";
 }
 
 .nft-list {
@@ -108,9 +108,9 @@ ul {
   font-family: monospace;
 }
 
-.home-page {
+/* .home-page {
   @apply flex flex-col justify-center items-center min-h-screen relative bg-[length:100vw_320px] bg-no-repeat;
-}
+} */
 
 .login-page {
   @apply flex flex-col items-center min-h-screen bg-gray-300;
@@ -134,7 +134,8 @@ ul {
 
 .login-button:hover:enabled {
   @apply cursor-pointer;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #a799ff;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)),
+    #a799ff;
 }
 .login-button:active:enabled {
   @apply opacity-50 cursor-pointer scale-[0.99];
@@ -179,13 +180,15 @@ ul {
 }
 
 .wallet-method:hover:enabled {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #edebff;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)),
+    #edebff;
   background-blend-mode: color-burn, normal;
 }
 
 .wallet-method:active:enabled {
   @apply opacity-50 scale-[0.99];
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #edebff;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)),
+    #edebff;
 }
 .wallet-method-desc {
   @apply text-[#77767a] text-left text-sm mt-2.5;
@@ -210,11 +213,13 @@ ul {
 
 .form-button:hover:enabled {
   @apply cursor-pointer;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #edebff;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)),
+    #edebff;
 }
 .form-button:active:enabled {
   @apply opacity-50 scale-[0.99];
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #edebff;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)),
+    #edebff;
 }
 
 .loading-container {
@@ -313,11 +318,13 @@ a {
 
 .social-login-button:hover:enabled {
   @apply cursor-pointer;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #ffffff;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)),
+    #ffffff;
 }
 .social-login-button:active:enabled {
   @apply opacity-50 scale-[0.99];
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)), #ffffff;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05)),
+    #ffffff;
 }
 
 .api-button {

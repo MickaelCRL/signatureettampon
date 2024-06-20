@@ -4,13 +4,9 @@ import DevLinks from "./DevLinks";
 
 const Header = () => {
   return (
-    <div className="app-header-container">
-      <div className="flex flex-col gap-2.5 items-center">
-        {/* <Image src={Logo} alt="logo" /> */}
-        <div className="text-center text-white text-xl font-extrabold font-['Inter'] leading-[30px]">
-          Signature et Tampon{" "}
-        </div>
-      </div>
+    <div className="header-container">
+      <div className="header-title">Signature et Tampon</div>
+      <div className="account">Mon compte</div>
     </div>
   );
 };

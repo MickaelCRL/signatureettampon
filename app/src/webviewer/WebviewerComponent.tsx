@@ -23,14 +23,16 @@ function WebviewerComponent() {
   }, []);
 
   return (
-    <div className="MyComponent">
-      <div className="header">Signature et tampon</div>
-      <div
-        className="webviewer"
-        ref={viewer}
-        style={{ height: "1000vh" }}
-      ></div>
-    </div>
+    <div
+      className="webviewer"
+      ref={viewer}
+      style={{
+        height: "100vh",
+        width: "70%",
+        marginLeft: "auto",
+        marginRight: "auto",
+      }}
+    ></div>
   );
 }
 

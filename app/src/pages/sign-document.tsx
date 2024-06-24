@@ -6,7 +6,7 @@ import Spacer from "@/components/ui/Spacer";
 function PageSigndocument() {
   return (
     <>
-      <Header />
+      <Header isLoggedIn={true} />
       <Spacer size={30} />
       <WebviewerComponent />
       <Spacer size={30} />

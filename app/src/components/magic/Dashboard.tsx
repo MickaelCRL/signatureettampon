@@ -8,6 +8,7 @@ import DevLinks from "./DevLinks";
 import Header from "./Header";
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 const WebviewerComponent = dynamic(
   () => import("@/webviewer/WebviewerComponent"),
@@ -15,10 +16,9 @@ const WebviewerComponent = dynamic(
 );
 
 export default function Dashboard({ token, setToken }: LoginProps) {
-  const [showWebviewer, setShowWebviewer] = useState(false);
-
+  const router = useRouter();
   const handleClick = () => {
-    setShowWebviewer(true);
+    router.push("/sign-document");
   };
   return (
     <div className="home-page">
@@ -26,19 +26,16 @@ export default function Dashboard({ token, setToken }: LoginProps) {
       <div className="cards-container">
         {/* <UserInfo token={token} setToken={setToken} /> */}
         <Spacer size={10} />
-        {/* <WalletMethods token={token} setToken={setToken} /> */}
+        <WalletMethods token={token} setToken={setToken} />
         <Spacer size={15} />
       </div>
-      {!showWebviewer ? (
-        <>
-          <p className="title-center">Signer un document</p>
-          <button className="btn-commencer" onClick={handleClick}>
-            Commencer
-          </button>
-        </>
-      ) : (
-        <WebviewerComponent />
-      )}
+
+      <>
+        <p className="title-center">Signer un document</p>
+        <button className="btn-primary" onClick={handleClick}>
+          Commencer
+        </button>
+      </>
     </div>
   );
 }

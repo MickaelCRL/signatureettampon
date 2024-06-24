@@ -22,11 +22,11 @@ export default function Dashboard({ token, setToken }: LoginProps) {
   };
   return (
     <div className="home-page">
-      <Header />
+      <Header isLoggedIn={true} />
       <div className="cards-container">
         {/* <UserInfo token={token} setToken={setToken} /> */}
         <Spacer size={10} />
-        <WalletMethods token={token} setToken={setToken} />
+        {/* <WalletMethods token={token} setToken={setToken} /> */}
         <Spacer size={15} />
       </div>
 

@@ -7,7 +7,7 @@ const Login = ({ token, setToken }: LoginProps) => {
   return (
     <>
       {" "}
-      <Header />
+      <Header isLoggedIn={false} />
       <div
         className={`max-w-[100%] grid grid-cols-1 grid-flow-row auto-rows-fr gap-5 p-4 mt-8`}
       >

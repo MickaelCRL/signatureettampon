@@ -22,7 +22,7 @@ export default function Dashboard({ token, setToken }: LoginProps) {
   };
   return (
     <div className="home-page">
-      <Header isLoggedIn={true} />
+      <Header isLoggedIn={true} token={token} setToken={setToken} />
       <div className="cards-container">
         {/* <UserInfo token={token} setToken={setToken} /> */}
         <Spacer size={10} />

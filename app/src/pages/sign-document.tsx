@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import WebviewerComponent from "@/webviewer/WebviewerComponent";
+import WebviewerContainer from "@/webviewer/WebviewerComponent";
 import Header from "@/components/magic/Header";
 import Spacer from "@/components/ui/Spacer";
 import { LoginProps } from "@/utils/types";
@@ -8,9 +8,14 @@ import MagicProvider from "@/components/magic/MagicProvider";
 import { ToastContainer } from "react-toastify";
 import Login from "@/components/magic/Login";
 import MagicDashboardRedirect from "@/components/magic/MagicDashboardRedirect";
+import dynamic from "next/dynamic";
 
 function PageSigndocument() {
   const { token, setToken } = useContext(TokenContext);
+  const WebviewerComponent = dynamic(
+    () => import("@/webviewer/WebviewerComponent"),
+    { ssr: false }
+  );
   return (
     <>
       <MagicProvider>
@@ -21,8 +26,7 @@ function PageSigndocument() {
               <Header isLoggedIn={true} token={token} setToken={setToken} />
               <Spacer size={30} />
               <WebviewerComponent />
-              <Spacer size={30} />
-              <button className="btn-primary">Terminer</button>
+
               <Spacer size={30} />
             </>
           ) : (

@@ -1,27 +1,31 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import Divider from '@/components/ui/Divider';
-import { useMagic } from '../MagicProvider';
-import FormButton from '@/components/ui/FormButton';
-import FormInput from '@/components/ui/FormInput';
-import ErrorText from '@/components/ui/ErrorText';
-import Card from '@/components/ui/Card';
-import CardHeader from '@/components/ui/CardHeader';
-import { getFaucetUrl, getNetworkToken, isEip1559Supported } from '@/utils/network';
-import showToast from '@/utils/showToast';
-import Spacer from '@/components/ui/Spacer';
-import TransactionHistory from '@/components/ui/TransactionHistory';
-import Image from 'next/image';
-import Link from 'public/link.svg';
+import React, { useCallback, useEffect, useState } from "react";
+import Divider from "@/components/ui/Divider";
+import { useMagic } from "../MagicProvider";
+import FormButton from "@/components/ui/FormButton";
+import FormInput from "@/components/ui/FormInput";
+import ErrorText from "@/components/ui/ErrorText";
+import Card from "@/components/ui/Card";
+import CardHeader from "@/components/ui/CardHeader";
+import {
+  getFaucetUrl,
+  getNetworkToken,
+  isEip1559Supported,
+} from "@/utils/network";
+import showToast from "@/utils/showToast";
+import Spacer from "@/components/ui/Spacer";
+import TransactionHistory from "@/components/ui/TransactionHistory";
+import Image from "next/image";
+import Link from "public/link.svg";
 
 const SendTransaction = () => {
   const { web3 } = useMagic();
-  const [toAddress, setToAddress] = useState('');
-  const [amount, setAmount] = useState('');
+  const [toAddress, setToAddress] = useState("");
+  const [amount, setAmount] = useState("");
   const [disabled, setDisabled] = useState(!toAddress || !amount);
-  const [hash, setHash] = useState('');
+  const [hash, setHash] = useState("");
   const [toAddressError, setToAddressError] = useState(false);
   const [amountError, setAmountError] = useState(false);
-  const publicAddress = localStorage.getItem('user');
+  const publicAddress = localStorage.getItem("user");
 
   useEffect(() => {
     setDisabled(!toAddress || !amount);
@@ -40,26 +44,26 @@ const SendTransaction = () => {
     const txnParams = {
       from: publicAddress,
       to: toAddress,
-      value: web3.utils.toWei(amount, 'ether'),
+      value: web3.utils.toWei(amount, "ether"),
       // Specify `gasPrice` if network doesn't support EIP-1559
       ...(!isEip1559Supported() && { gasPrice: await web3.eth.getGasPrice() }),
     };
     web3.eth
       .sendTransaction(txnParams as any)
-      .on('transactionHash', (txHash) => {
+      .on("transactionHash", (txHash: React.SetStateAction<string>) => {
         setHash(txHash);
-        console.log('Transaction hash:', txHash);
+        console.log("Transaction hash:", txHash);
       })
-      .then((receipt) => {
+      .then((receipt: any) => {
         showToast({
-          message: 'Transaction Successful',
-          type: 'success',
+          message: "Transaction Successful",
+          type: "success",
         });
-        setToAddress('');
-        setAmount('');
-        console.log('Transaction receipt:', receipt);
+        setToAddress("");
+        setAmount("");
+        console.log("Transaction receipt:", receipt);
       })
-      .catch((error) => {
+      .catch((error: any) => {
         console.error(error);
         setDisabled(false);
       });
@@ -91,8 +95,13 @@ const SendTransaction = () => {
         onChange={(e: any) => setAmount(e.target.value)}
         placeholder={`Amount (${getNetworkToken()})`}
       />
-      {amountError ? <ErrorText className="error">Invalid amount</ErrorText> : null}
-      <FormButton onClick={sendTransaction} disabled={!toAddress || !amount || disabled}>
+      {amountError ? (
+        <ErrorText className="error">Invalid amount</ErrorText>
+      ) : null}
+      <FormButton
+        onClick={sendTransaction}
+        disabled={!toAddress || !amount || disabled}
+      >
         Send Transaction
       </FormButton>
 

@@ -10,11 +10,6 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useRouter } from "next/router";
 
-const WebviewerComponent = dynamic(
-  () => import("@/webviewer/WebviewerComponent"),
-  { ssr: false }
-);
-
 export default function Dashboard({ token, setToken }: LoginProps) {
   const router = useRouter();
   const handleClick = () => {

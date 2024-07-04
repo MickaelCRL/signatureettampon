@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  idUser         String        @id @default(cuid())
+  firstName      String
+  lastName       String
+  email          String
+  subscription   Subscription? @relation(fields: [idSubscription], references: [idSubscription])
+  idSubscription String?
+  envelopes      Envelope?     @relation(fields: [idEnvelope], references: [idEnvelope])
+  idEnvelope     String?
+}
+
+model Subscription {
+  idSubscription String @id @default(cuid())
+  name           String
+  envelopeSize   Int
+  price          Float
+  users          User[]
+}
+
+model Envelope {
+  idEnvelope String     @id @default(cuid())
+  name       String
+  hash       String
+  documents  Document[]
+  User       User[]
+}
+
+model Document {
+  idDocument String   @id @default(cuid())
+  name       String
+  isSigned   Boolean
+  hash       String
+  envelope   Envelope @relation(fields: [idEnvelope], references: [idEnvelope])
+  idEnvelope String
+  signs      Sign[]
+}
+
+model Signatory {
+  idSignatory String  @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String
+  hasSigned   Boolean
+  signs       Sign[]
+}
+
+model Sign {
+  idDocument  String
+  idSignatory String
+  document    Document  @relation(fields: [idDocument], references: [idDocument])
+  signatory   Signatory @relation(fields: [idSignatory], references: [idSignatory])
+
+  @@id([idDocument, idSignatory])
+}

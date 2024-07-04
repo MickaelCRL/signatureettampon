@@ -2,9 +2,12 @@ import Spacer from "@/components/ui/Spacer";
 import WebViewer from "@pdftron/webviewer";
 import React, { useState, useEffect, useRef } from "react";
 import AddSignatoryComponent from "./AddSignatoryComponent";
+import { useRouter } from "next/router";
 
 function WebviewerComponent() {
   const viewer = useRef(null);
+  const router = useRouter();
+  const [documentName, setDocumentName] = useState<string>("");
 
   useEffect(() => {
     WebViewer(
@@ -24,9 +27,10 @@ function WebviewerComponent() {
       documentViewer.addEventListener("documentLoaded", async () => {
         const doc = documentViewer.getDocument();
         const nbPage = documentViewer.getPageCount();
+        setDocumentName(doc.getFilename());
 
         console.log("Document loaded:", doc);
-        console.log("Document name:", doc.getFilename());
+        console.log("Document name:", documentName);
         console.log("Page count:", nbPage);
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -61,6 +65,8 @@ function WebviewerComponent() {
       console.log("Field type:", field.type);
       console.log("Field name:", field.name);
       console.log("Field value:", field.value);
+      console.log("Field initial signatories", field.initialSignatories);
+      console.log("Field nb signature", field.nbSignature);
     });
   }
 
@@ -105,6 +111,19 @@ function WebviewerComponent() {
     }
   }
 
+  const handleFinish = () => {
+    // Check if there are any signatories
+    const storedSignatories = localStorage.getItem("signatories");
+    const signatories = storedSignatories ? JSON.parse(storedSignatories) : [];
+
+    if (signatories.length === 0) {
+      // Navigate to the success page with the document name in the URL
+      router.push(`/signing-complete/${encodeURIComponent(documentName)}`);
+    } else {
+      alert("Please complete all signatures before finishing.");
+    }
+  };
+  const isDoocument = !documentName;
   return (
     <>
       <div
@@ -112,7 +131,7 @@ function WebviewerComponent() {
         ref={viewer}
         style={{
           height: "100vh",
-          width: "50%",
+          width: "70%",
           marginLeft: "auto",
           marginRight: "auto",
         }}
@@ -120,7 +139,13 @@ function WebviewerComponent() {
       <Spacer size={30} />
       <AddSignatoryComponent></AddSignatoryComponent>
       <Spacer size={70} />
-      <button className="btn-primary">Terminer</button>
+      <button
+        className="btn-primary"
+        onClick={handleFinish}
+        disabled={isDoocument}
+      >
+        Terminer
+      </button>
     </>
   );
 }

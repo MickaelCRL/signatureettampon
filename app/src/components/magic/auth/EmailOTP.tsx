@@ -3,7 +3,7 @@ import showToast from "@/utils/showToast";
 import Spinner from "../../ui/Spinner";
 import { RPCError, RPCErrorCode } from "magic-sdk";
 import { LoginProps } from "@/utils/types";
-import { saveUserInfo } from "@/utils/common";
+import { saveUserInPrisma, saveUserInfo } from "@/utils/common";
 import Card from "../../ui/Card";
 import CardHeader from "../../ui/CardHeader";
 import { useState } from "react";
@@ -11,52 +11,71 @@ import FormInput from "@/components/ui/FormInput";
 
 const EmailOTP = ({ token, setToken }: LoginProps) => {
   const { magic } = useMagic();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [firstNameError, setFirstNameError] = useState(false);
+  const [lastNameError, setLastNameError] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [isLoginInProgress, setLoginInProgress] = useState(false);
 
   const handleLogin = async () => {
+    let valid = true;
+
+    if (firstName.trim() === "") {
+      setFirstNameError(true);
+      valid = false;
+    }
+
+    if (lastName.trim() === "") {
+      setLastNameError(true);
+      valid = false;
+    }
     if (
       !email.match(
         /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
       )
     ) {
       setEmailError(true);
-    } else {
-      try {
-        setLoginInProgress(true);
-        setEmailError(false);
-        const token = await magic?.auth.loginWithEmailOTP({ email });
+      valid = false;
+    }
+    if (!valid) return;
+    try {
+      setLoginInProgress(true);
+      setEmailError(false);
+      const token = await magic?.auth.loginWithEmailOTP({ email });
 
-        const metadata = await magic?.user.getMetadata();
+      const metadata = await magic?.user.getMetadata();
 
-        if (!token || !metadata?.publicAddress) {
-          throw new Error("Magic login failed");
-        }
-
-        setToken(token);
-        saveUserInfo(token, "EMAIL", metadata?.publicAddress);
-        setEmail("");
-      } catch (e) {
-        console.log("login error: " + JSON.stringify(e));
-        if (e instanceof RPCError) {
-          switch (e.code) {
-            case RPCErrorCode.MagicLinkFailedVerification:
-            case RPCErrorCode.MagicLinkExpired:
-            case RPCErrorCode.MagicLinkRateLimited:
-            case RPCErrorCode.UserAlreadyLoggedIn:
-              showToast({ message: e.message, type: "error" });
-              break;
-            default:
-              showToast({
-                message: "Something went wrong. Please try again",
-                type: "error",
-              });
-          }
-        }
-      } finally {
-        setLoginInProgress(false);
+      if (!token || !metadata?.publicAddress) {
+        throw new Error("Magic login failed");
       }
+
+      setToken(token);
+      saveUserInfo(token, "EMAIL", metadata?.publicAddress);
+      await saveUserInPrisma({ firstName, lastName, email });
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+    } catch (e) {
+      console.log("login error: " + JSON.stringify(e));
+      if (e instanceof RPCError) {
+        switch (e.code) {
+          case RPCErrorCode.MagicLinkFailedVerification:
+          case RPCErrorCode.MagicLinkExpired:
+          case RPCErrorCode.MagicLinkRateLimited:
+          case RPCErrorCode.UserAlreadyLoggedIn:
+            showToast({ message: e.message, type: "error" });
+            break;
+          default:
+            showToast({
+              message: "Something went wrong. Please try again",
+              type: "error",
+            });
+        }
+      }
+    } finally {
+      setLoginInProgress(false);
     }
   };
 
@@ -64,6 +83,26 @@ const EmailOTP = ({ token, setToken }: LoginProps) => {
     <Card>
       <CardHeader id="login">Login</CardHeader>
       <div className="login-method-grid-item-container">
+        <FormInput
+          onChange={(e) => {
+            if (firstNameError) setFirstNameError(false);
+            setFirstName(e.target.value);
+          }}
+          placeholder="First Name"
+          value={firstName}
+        />
+        {firstNameError && (
+          <span className="error">First name is required</span>
+        )}
+        <FormInput
+          onChange={(e) => {
+            if (lastNameError) setLastNameError(false);
+            setLastName(e.target.value);
+          }}
+          placeholder="Last Name"
+          value={lastName}
+        />
+        {lastNameError && <span className="error">Last name is required</span>}
         <FormInput
           onChange={(e) => {
             if (emailError) setEmailError(false);

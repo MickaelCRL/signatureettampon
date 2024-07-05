@@ -17,7 +17,7 @@ model User {
   idUser         String        @id @default(cuid())
   firstName      String
   lastName       String
-  email          String
+  email          String        @unique
   subscription   Subscription? @relation(fields: [idSubscription], references: [idSubscription])
   idSubscription String?
   envelopes      Envelope?     @relation(fields: [idEnvelope], references: [idEnvelope])

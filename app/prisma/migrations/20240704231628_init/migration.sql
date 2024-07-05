@@ -53,3 +53,6 @@ CREATE TABLE "Sign" (
     CONSTRAINT "Sign_idDocument_fkey" FOREIGN KEY ("idDocument") REFERENCES "Document" ("idDocument") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "Sign_idSignatory_fkey" FOREIGN KEY ("idSignatory") REFERENCES "Signatory" ("idSignatory") ON DELETE RESTRICT ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");

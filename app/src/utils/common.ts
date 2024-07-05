@@ -1,8 +1,6 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { Magic } from "./types";
 import { Dispatch, SetStateAction } from "react";
-
-const prisma = new PrismaClient();
 
 export type LoginMethod = "EMAIL" | "SMS" | "SOCIAL" | "FORM";
 
@@ -38,5 +36,21 @@ export const saveUserInPrisma = async (user: Prisma.UserCreateInput) => {
   if (!res.ok) {
     throw new Error(res.statusText);
   }
+  return res.json();
+};
+
+export const getUserFromPrisma = async (email: string) => {
+  const res = await fetch(`/api/user?email=${email}`);
+
+  if (!res.ok) {
+    if (res.status === 404) {
+      // Retourne null si l'utilisateur n'existe pas (404)
+      return null;
+    }
+    const error = new Error(res.statusText) as any;
+    error.status = res.status;
+    throw error;
+  }
+
   return res.json();
 };

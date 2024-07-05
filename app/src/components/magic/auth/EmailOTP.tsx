@@ -109,7 +109,7 @@ const EmailOTP = ({ token, setToken }: LoginProps) => {
       }
 
       setToken(token);
-      saveUserInfo(token, "EMAIL", metadata.publicAddress);
+      saveUserInfo(token, "EMAIL", metadata.publicAddress, email);
 
       if (isCreatingAccount) {
         await saveUserInPrisma({ firstName, lastName, email });

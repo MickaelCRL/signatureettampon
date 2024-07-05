@@ -1,18 +1,30 @@
-import React from "react";
-import WalletMethods from "./cards/WalletMethodsCard";
-import SendTransaction from "./cards/SendTransactionCard";
 import Spacer from "@/components/ui/Spacer";
+import { createEnvelope } from "@/utils/common";
 import { LoginProps } from "@/utils/types";
-import UserInfo from "./cards/UserInfoCard";
-import DevLinks from "./DevLinks";
-import Header from "./Header";
-import dynamic from "next/dynamic";
-import { useState } from "react";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import Header from "./Header";
 
 export default function Dashboard({ token, setToken }: LoginProps) {
   const router = useRouter();
-  const handleClick = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = async () => {
+    setLoading(true);
+    const email = localStorage.getItem("email");
+    try {
+      if (!email) {
+        throw new Error("Email not found in localStorage");
+      }
+
+      const data = await createEnvelope(email);
+      console.log(data.message);
+    } catch (error) {
+      console.error("Failed to check or create envelope:", error);
+    } finally {
+      setLoading(false);
+    }
+
     router.push("/sign-document");
   };
   return (
@@ -27,8 +39,12 @@ export default function Dashboard({ token, setToken }: LoginProps) {
 
       <>
         <p className="title-center">Signer un document</p>
-        <button className="btn-primary" onClick={handleClick}>
-          Commencer
+        <button
+          className="btn-primary"
+          onClick={handleClick}
+          disabled={loading}
+        >
+          {loading ? "Chargement..." : "Commencer"}
         </button>
       </>
     </div>

@@ -19,12 +19,14 @@ export const logout = async (
 export const saveUserInfo = (
   token: string,
   loginMethod: LoginMethod,
-  userAddress: string
+  userAddress: string,
+  email: string
 ) => {
   localStorage.setItem("token", token);
   localStorage.setItem("isAuthLoading", "false");
   localStorage.setItem("loginMethod", loginMethod);
   localStorage.setItem("user", userAddress);
+  localStorage.setItem("email", email);
 };
 
 export const saveUserInPrisma = async (user: Prisma.UserCreateInput) => {
@@ -53,4 +55,27 @@ export const getUserFromPrisma = async (email: string) => {
   }
 
   return res.json();
+};
+
+export const createEnvelope = async (email: string) => {
+  try {
+    const response = await fetch("/api/envelope", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to create envelope");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Failed to create envelope:", error);
+    throw error;
+  }
 };

@@ -8,12 +8,6 @@ import MagicDashboardRedirect from "@/components/magic/MagicDashboardRedirect";
 import TokenContext from "@/utils/TokenContext";
 
 export default function Home() {
-  // const [token, setToken] = useState('');
-
-  // useEffect(() => {
-  //   setToken(localStorage.getItem('token') ?? '');
-  // }, [setToken]);
-
   const { token, setToken } = useContext(TokenContext);
 
   return (

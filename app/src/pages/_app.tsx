@@ -5,11 +5,14 @@ import "@/styles/userpopup.css";
 import "@/styles/addsignatories.css";
 import { TokenProvider } from "@/utils/TokenContext";
 import type { AppProps } from "next/app";
+import { EdgeStoreProvider } from "@/lib/edgestore";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <TokenProvider>
-      <Component {...pageProps} />
+      <EdgeStoreProvider>
+        <Component {...pageProps} />
+      </EdgeStoreProvider>
     </TokenProvider>
   );
 }

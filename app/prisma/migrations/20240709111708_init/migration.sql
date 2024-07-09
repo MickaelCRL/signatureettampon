@@ -31,6 +31,7 @@ CREATE TABLE "Document" (
     "name" TEXT NOT NULL,
     "isSigned" BOOLEAN NOT NULL,
     "hash" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
     "idEnvelope" TEXT NOT NULL,
     CONSTRAINT "Document_idEnvelope_fkey" FOREIGN KEY ("idEnvelope") REFERENCES "Envelope" ("idEnvelope") ON DELETE RESTRICT ON UPDATE CASCADE
 );

@@ -112,12 +112,10 @@ function WebviewerComponent() {
   }
 
   const handleFinish = () => {
-    // Check if there are any signatories
     const storedSignatories = localStorage.getItem("signatories");
     const signatories = storedSignatories ? JSON.parse(storedSignatories) : [];
 
     if (signatories.length === 0) {
-      // Navigate to the success page with the document name in the URL
       router.push(`/signing-complete/${encodeURIComponent(documentName)}`);
     } else {
       alert("Please complete all signatures before finishing.");
@@ -137,8 +135,7 @@ function WebviewerComponent() {
         }}
       ></div>
       <Spacer size={30} />
-      <AddSignatoryComponent></AddSignatoryComponent>
-      <Spacer size={70} />
+
       <button
         className="btn-primary"
         onClick={handleFinish}

@@ -25,7 +25,7 @@ export default function Dashboard({ token, setToken }: LoginProps) {
       setLoading(false);
     }
 
-    router.push("/sign-document");
+    router.push("/upload-file");
   };
   return (
     <div className="home-page">

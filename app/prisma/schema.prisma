@@ -45,6 +45,7 @@ model Document {
   name       String
   isSigned   Boolean
   hash       String
+  url        String
   envelope   Envelope @relation(fields: [idEnvelope], references: [idEnvelope])
   idEnvelope String
   signs      Sign[]

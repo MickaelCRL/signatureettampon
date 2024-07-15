@@ -41,7 +41,10 @@ function PageUploadFile() {
         envelope,
       });
 
-      await router.push("/sign-document");
+      await router.push({
+        pathname: "/sign-document",
+        query: { documentUrl: documentInfo.url },
+      });
     }
   }
 
@@ -50,7 +53,7 @@ function PageUploadFile() {
       <MagicProvider>
         <Header isLoggedIn={true} token={token} setToken={setToken} />
         <Spacer size={30}></Spacer>
-        <p className="title-center">Ajouter des documents </p>
+        <p className="title-center">Ajouter un document </p>
         <div
           style={{
             border: "1px solid #ccc",

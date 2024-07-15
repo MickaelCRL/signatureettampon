@@ -3,11 +3,14 @@ import WebViewer from "@pdftron/webviewer";
 import React, { useState, useEffect, useRef } from "react";
 import AddSignatoryComponent from "./AddSignatoryComponent";
 import { useRouter } from "next/router";
+import { useEdgeStore } from "@/lib/edgestore";
 
-function WebviewerComponent() {
+function WebviewerComponent({ documentUrl }: { documentUrl: string }) {
   const viewer = useRef(null);
   const router = useRouter();
   const [documentName, setDocumentName] = useState<string>("");
+  const { edgestore } = useEdgeStore();
+  const [instance, setInstance] = useState<any>(null);
 
   useEffect(() => {
     WebViewer(
@@ -15,9 +18,20 @@ function WebviewerComponent() {
         path: "/webviewer/lib",
         licenseKey:
           "demo:1718657188013:7fbff2190300000000ddadd08e42549a2cea8d0bb514c40e12f3b0ac02",
-        initialDoc: "",
-        enableFilePicker: true,
-        fullAPI: true,
+        initialDoc: documentUrl,
+        // enableFilePicker: true,
+        // fullAPI: true,
+        disabledElements: [
+          "rubberStampToolGroupButton",
+          "signatureToolGroupButton",
+          "stampToolGroupButton",
+          "fileAttachmentToolGroupButton",
+          "calloutToolGroupButton",
+          "eraserToolButton",
+          "undoButton",
+          "redoButton",
+          "toolsHeader",
+        ],
       },
       viewer.current!
     ).then((instance) => {
@@ -57,6 +71,9 @@ function WebviewerComponent() {
           logFields(fields);
         }
       );
+
+      setInstance(instance);
+      return instance;
     });
   }, []);
 
@@ -111,14 +128,37 @@ function WebviewerComponent() {
     }
   }
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     const storedSignatories = localStorage.getItem("signatories");
     const signatories = storedSignatories ? JSON.parse(storedSignatories) : [];
 
     if (signatories.length === 0) {
-      router.push(`/signing-complete/${encodeURIComponent(documentName)}`);
-    } else {
-      alert("Please complete all signatures before finishing.");
+      if (instance) {
+        const { documentViewer, annotationManager } = instance.Core;
+        const doc = documentViewer.getDocument();
+
+        const xfdfString = await annotationManager.exportAnnotations();
+        const options = { xfdfString, flatten: true };
+
+        const data = await doc.getFileData(options);
+        const arr = new Uint8Array(data);
+        const blob = new Blob([arr], { type: "application/pdf" });
+
+        const file = new File([blob], documentName, {
+          type: "application/pdf",
+        });
+
+        const res = await edgestore.publicFiles.upload({
+          file,
+          options: {
+            replaceTargetUrl: documentUrl,
+          },
+        });
+
+        router.push(`/signing-complete/${encodeURIComponent(documentName)}`);
+      } else {
+        alert("Please complete all signatures before finishing.");
+      }
     }
   };
   const isDoocument = !documentName;

@@ -9,9 +9,13 @@ import { ToastContainer } from "react-toastify";
 import Login from "@/components/magic/Login";
 import MagicDashboardRedirect from "@/components/magic/MagicDashboardRedirect";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
 
 function PageSigndocument() {
   const { token, setToken } = useContext(TokenContext);
+  const router = useRouter();
+  const { documentUrl } = router.query;
+
   const WebviewerComponent = dynamic(
     () => import("@/webviewer/WebviewerComponent"),
     { ssr: false }
@@ -25,7 +29,9 @@ function PageSigndocument() {
             <>
               <Header isLoggedIn={true} token={token} setToken={setToken} />
               <Spacer size={30} />
-              <WebviewerComponent />
+              {documentUrl && (
+                <WebviewerComponent documentUrl={documentUrl.toString()} />
+              )}
 
               <Spacer size={30} />
             </>

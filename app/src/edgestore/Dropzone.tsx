@@ -4,11 +4,7 @@ import { useEdgeStore } from "../lib/edgestore";
 import { useState } from "react";
 
 interface DropzoneProps {
-  onUploadComplete: (documentInfo: {
-    name: string;
-    url: string;
-    hash: string;
-  }) => void;
+  onUploadComplete: (documentInfo: Document) => void;
 }
 
 export default function Dropzone({ onUploadComplete }: DropzoneProps) {
@@ -28,8 +24,14 @@ export default function Dropzone({ onUploadComplete }: DropzoneProps) {
         },
       });
       setUploading(false);
+
       // Pass the document information to the parent component
-      onUploadComplete({ name: file.name, url: res.url, hash: "" });
+      onUploadComplete({
+        name: file.name,
+        url: res.url,
+        hash: "",
+        isSigned: false,
+      } as Document);
       console.log(res);
     }
   };

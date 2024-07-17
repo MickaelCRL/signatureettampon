@@ -47,7 +47,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             <hr style="border-top: 1px solid #cccccc; margin-top: 24px;">
         
             <p style="font-size: 0.75rem; color: #888888; margin-left: 4px;">Signature et Tampon</p>
-            <p style="font-size: 0.75rem; color: #888888; margin-left: 4px;">Adresse de l'entreprise, Ville, Pays</p>
+            <p style="font-size: 0.75rem; color: #888888; margin-left: 4px;">Parvis Alan Turing, Paris, France</p>
         
           </div>
         

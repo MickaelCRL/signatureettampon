@@ -1,25 +1,28 @@
 import Spacer from "@/components/ui/Spacer";
 import { useEdgeStore } from "@/lib/edgestore";
-import { sendDocumentSigned } from "@/utils/common";
+import { sendDocumentSigned, signDocument } from "@/utils/common";
 import WebViewer from "@pdftron/webviewer";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 
-function WebviewerComponent({ documentUrl }: { documentUrl: string }) {
+function WebviewerComponent({ documentData }: { documentData: any }) {
   const viewer = useRef(null);
   const router = useRouter();
-  const [documentName, setDocumentName] = useState<string>("");
   const { edgestore } = useEdgeStore();
   const [instance, setInstance] = useState<any>(null);
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
+  const [document, setDocument] = useState(documentData.document);
 
   useEffect(() => {
+    console.log("Document dans webviewer:", documentData);
+    console.log("Document url dans webviewer:", documentData.document.url);
+
     WebViewer(
       {
         path: "/webviewer/lib",
         licenseKey:
           "demo:1718657188013:7fbff2190300000000ddadd08e42549a2cea8d0bb514c40e12f3b0ac02",
-        initialDoc: documentUrl,
+        initialDoc: document.url,
         // enableFilePicker: true,
         // fullAPI: true,
         disabledElements: [
@@ -42,10 +45,9 @@ function WebviewerComponent({ documentUrl }: { documentUrl: string }) {
       documentViewer.addEventListener("documentLoaded", async () => {
         const doc = documentViewer.getDocument();
         const nbPage = documentViewer.getPageCount();
-        setDocumentName(doc.getFilename());
 
         console.log("Document loaded:", doc);
-        console.log("Document name:", documentName);
+        console.log("Document name:", document.name);
         console.log("Page count:", nbPage);
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -145,16 +147,23 @@ function WebviewerComponent({ documentUrl }: { documentUrl: string }) {
         const arr = new Uint8Array(data);
         const blob = new Blob([arr], { type: "application/pdf" });
 
-        const file = new File([blob], documentName, {
+        const file = new File([blob], document.name, {
           type: "application/pdf",
         });
 
         const res = await edgestore.publicFiles.upload({
           file,
           options: {
-            replaceTargetUrl: documentUrl,
+            replaceTargetUrl: document.url,
           },
         });
+
+        console.log("idDocument:", document.idDocument);
+        try {
+          await signDocument(document.idDocument, true);
+        } catch (error) {
+          console.error("Error in signDocument:", error);
+        }
 
         try {
           await sendDocumentSigned(email, res.url);
@@ -162,13 +171,13 @@ function WebviewerComponent({ documentUrl }: { documentUrl: string }) {
           console.error("Error in sendDocumentSigned:", error);
         }
 
-        router.push(`/signing-complete/${encodeURIComponent(documentName)}`);
+        router.push(`/signing-complete/${encodeURIComponent(document.name)}`);
       } else {
         alert("Please complete all signatures before finishing.");
       }
     }
   };
-  const isDoocument = !documentName;
+
   return (
     <>
       <div
@@ -183,11 +192,7 @@ function WebviewerComponent({ documentUrl }: { documentUrl: string }) {
       ></div>
       <Spacer size={30} />
 
-      <button
-        className="btn-primary"
-        onClick={handleFinish}
-        disabled={isDoocument}
-      >
+      <button className="btn-primary" onClick={handleFinish}>
         Terminer
       </button>
     </>

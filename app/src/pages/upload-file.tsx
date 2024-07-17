@@ -5,38 +5,39 @@ import MagicProvider from "@/components/magic/MagicProvider";
 import Spacer from "@/components/ui/Spacer";
 import Dropzone from "@/edgestore/Dropzone";
 import { createDocument, getUserEnvelope } from "@/utils/common";
+import DocumentContext from "@/utils/DocumentContext";
 import TokenContext from "@/utils/TokenContext";
 import AddSignatoryComponent from "@/webviewer/AddSignatoryComponent";
 import { useRouter } from "next/router";
 import { useContext, useState } from "react";
+import { set } from "zod";
 
 function PageUploadFile() {
   const { token, setToken } = useContext(TokenContext);
   const router = useRouter();
-  const [documentInfo, setDocumentInfo] = useState<{
-    name: string;
-    url: string;
-    hash: string;
-  } | null>(null);
+  const { document, setDocument } = useContext(DocumentContext);
 
   async function handleNextClick() {
-    if (documentInfo) {
+    if (document) {
       const email = localStorage.getItem("email") || "";
       const envelope = await getUserEnvelope(email);
 
-      console.log("Document info:", documentInfo);
+      console.log("Document info:", document);
       console.log("Email:", email);
       console.log("Envelope:", envelope);
 
-      await createDocument({
-        ...documentInfo,
+      const documentCreated = await createDocument({
+        ...document,
         isSigned: false,
         envelope,
       });
 
+      console.log("Document created:", documentCreated);
+
+      setDocument(documentCreated);
+
       await router.push({
         pathname: "/sign-document",
-        query: { documentUrl: documentInfo.url },
       });
     }
   }
@@ -55,7 +56,7 @@ function PageUploadFile() {
             marginRight: "auto",
           }}
         >
-          <Dropzone onUploadComplete={setDocumentInfo}></Dropzone>
+          <Dropzone onUploadComplete={setDocument}></Dropzone>
         </div>
         <Spacer size={30}></Spacer>
         <AddSignatoryComponent></AddSignatoryComponent>

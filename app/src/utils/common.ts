@@ -124,6 +124,27 @@ export const createDocument = async (document: Prisma.DocumentCreateInput) => {
   return res.json();
 };
 
+export async function signDocument(idDocument: string, isSigned: boolean) {
+  try {
+    const res = await fetch("/api/db/document", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ idDocument, isSigned }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    console.log(data);
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+}
+
 export async function sendDocumentSigned(email: string, documentUrl: string) {
   try {
     const res = await fetch("/api/resend/send", {

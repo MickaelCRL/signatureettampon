@@ -1,9 +1,9 @@
 import Spacer from "@/components/ui/Spacer";
-import WebViewer from "@pdftron/webviewer";
-import React, { useState, useEffect, useRef } from "react";
-import AddSignatoryComponent from "./AddSignatoryComponent";
-import { useRouter } from "next/router";
 import { useEdgeStore } from "@/lib/edgestore";
+import { sendDocumentSigned } from "@/utils/common";
+import WebViewer from "@pdftron/webviewer";
+import { useRouter } from "next/router";
+import { useEffect, useRef, useState } from "react";
 
 function WebviewerComponent({ documentUrl }: { documentUrl: string }) {
   const viewer = useRef(null);
@@ -11,6 +11,7 @@ function WebviewerComponent({ documentUrl }: { documentUrl: string }) {
   const [documentName, setDocumentName] = useState<string>("");
   const { edgestore } = useEdgeStore();
   const [instance, setInstance] = useState<any>(null);
+  const [email, setEmail] = useState(localStorage.getItem("email") || "");
 
   useEffect(() => {
     WebViewer(
@@ -154,6 +155,12 @@ function WebviewerComponent({ documentUrl }: { documentUrl: string }) {
             replaceTargetUrl: documentUrl,
           },
         });
+
+        try {
+          await sendDocumentSigned(email, res.url);
+        } catch (error) {
+          console.error("Error in sendDocumentSigned:", error);
+        }
 
         router.push(`/signing-complete/${encodeURIComponent(documentName)}`);
       } else {

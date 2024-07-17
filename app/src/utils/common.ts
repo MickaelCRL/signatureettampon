@@ -123,3 +123,24 @@ export const createDocument = async (document: Prisma.DocumentCreateInput) => {
 
   return res.json();
 };
+
+export async function sendDocumentSigned(email: string, documentUrl: string) {
+  try {
+    const res = await fetch("/api/resend/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, documentUrl }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    console.log(data);
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+}

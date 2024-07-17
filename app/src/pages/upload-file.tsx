@@ -1,21 +1,14 @@
 "use client";
 
-import { useRouter } from "next/router";
 import Header from "@/components/magic/Header";
 import MagicProvider from "@/components/magic/MagicProvider";
 import Spacer from "@/components/ui/Spacer";
-import {
-  MultiFileDropzone,
-  type FileState,
-} from "@/edgestore/MultiFileDropzone";
-import { useEdgeStore } from "@/lib/edgestore";
-import TokenContext from "@/utils/TokenContext";
-import AddSignatoryComponent from "@/webviewer/AddSignatoryComponent";
-import { SetStateAction, useContext, useState } from "react";
 import Dropzone from "@/edgestore/Dropzone";
 import { createDocument, getUserEnvelope } from "@/utils/common";
-import { get } from "http";
-import { Prisma } from "@prisma/client";
+import TokenContext from "@/utils/TokenContext";
+import AddSignatoryComponent from "@/webviewer/AddSignatoryComponent";
+import { useRouter } from "next/router";
+import { useContext, useState } from "react";
 
 function PageUploadFile() {
   const { token, setToken } = useContext(TokenContext);

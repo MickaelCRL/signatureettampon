@@ -9,6 +9,7 @@ function SigningComplete() {
   const { token, setToken } = useContext(TokenContext);
   const router = useRouter();
   const { documentName } = router.query;
+  const email = localStorage.getItem("email");
 
   const handleGoHome = () => {
     router.push("/");
@@ -19,10 +20,14 @@ function SigningComplete() {
       <Header isLoggedIn={true} token={token} setToken={setToken} />
       <Spacer size={30} />
       <div>
-        <h1>Félicitations, vous avez terminé de signer votre document!</h1>
+        <h1>
+          Félicitations, vous avez terminé de signer votre document! Vous
+          recevrez un lien pour le télécharger
+        </h1>
         {documentName && (
           <p>Document: {decodeURIComponent(documentName as string)}</p>
         )}
+
         <button className="login-button" onClick={handleGoHome}>
           Retour à l'accueil
         </button>

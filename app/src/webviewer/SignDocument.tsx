@@ -1,10 +1,14 @@
 import Spacer from "@/components/ui/Spacer";
 import exportAndUploadDocument from "@/utils/exportAndUploadDocument";
-import { getDocumentByIdForSignatory } from "@/utils/prisma/signatory";
+import {
+  getDocumentByIdForSignatory,
+  updateSignatoryStatus,
+} from "@/utils/prisma/signatory";
 import WebViewer from "@pdftron/webviewer";
 import React, { useEffect, useRef, useState } from "react";
 import { useEdgeStore } from "@/lib/edgestore";
 import { set } from "zod";
+import signatory from "@/pages/api/db/signatory";
 
 function SignDocument({ idDocument }: { idDocument: any }) {
   const viewer = useRef(null);
@@ -81,6 +85,8 @@ function SignDocument({ idDocument }: { idDocument: any }) {
 
   async function handleFinish() {
     const res = await exportAndUploadDocument(instance, document, edgestore);
+
+    await updateSignatoryStatus(email, true);
   }
 
   return (

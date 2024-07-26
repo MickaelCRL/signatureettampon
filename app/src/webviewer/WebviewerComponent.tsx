@@ -103,7 +103,7 @@ function WebviewerComponent({ documentData }: { documentData: any }) {
 
     try {
       document.url = res.url;
-      document.isSigned = true;
+      console.log("document.isSigned:", document.isSigned);
       await updateDocument(document);
     } catch (error) {
       console.error("Error in signDocument:", error);
@@ -112,6 +112,14 @@ function WebviewerComponent({ documentData }: { documentData: any }) {
     console.log("document.url:", document.url);
 
     if (signatories.length === 0) {
+      try {
+        document.url = res.url;
+        document.isSigned = true;
+        await updateDocument(document);
+      } catch (error) {
+        console.error("Error in signDocument:", error);
+      }
+
       try {
         await sendDocumentSigned(email, document.url);
       } catch (error) {

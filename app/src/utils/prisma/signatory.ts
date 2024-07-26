@@ -57,14 +57,14 @@ export const getDocumentByIdForSignatory = async (
   }
 };
 
-export async function updateSignatory(signatory: Signatory) {
+export async function updateSignatoryStatus(email: string, hasSigned: boolean) {
   try {
     const res = await fetch("/api/db/signatory", {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ signatory }),
+      body: JSON.stringify({ email, hasSigned }),
     });
 
     if (!res.ok) {

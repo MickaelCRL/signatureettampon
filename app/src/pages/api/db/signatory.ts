@@ -80,11 +80,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(500).json({ message: "Internal server error" });
     }
   } else if (req.method === "PATCH") {
-    const { idSignatory, hasSigned } = req.body;
+    const { email, hasSigned } = req.body;
 
     try {
       const updatedSignatory = await prisma.signatory.update({
-        where: { idSignatory },
+        where: { email },
         data: { hasSigned },
       });
 

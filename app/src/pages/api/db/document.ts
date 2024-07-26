@@ -31,20 +31,22 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(500).json({ message: "Internal server error" });
     }
   } else if (req.method === "PATCH") {
-    const { idDocument, isSigned } = req.body;
+    const { document } = req.body;
     console.log("Received document id and isSigned:", req.body);
 
     try {
-      const document = await prisma.document.update({
+      const documentData = await prisma.document.update({
         where: {
-          idDocument,
+          idDocument: document.idDocument,
         },
         data: {
-          isSigned,
+          ...document,
         },
       });
 
-      return res.status(200).json({ message: "Document updated", document });
+      return res
+        .status(200)
+        .json({ message: "Document updated", documentData });
     } catch (error) {
       console.error("Error updating document:", error);
       return res.status(500).json({ message: "Internal server error" });

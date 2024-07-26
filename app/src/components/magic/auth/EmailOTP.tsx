@@ -3,16 +3,12 @@ import showToast from "@/utils/showToast";
 import Spinner from "../../ui/Spinner";
 import { RPCError, RPCErrorCode } from "magic-sdk";
 import { LoginProps } from "@/utils/types";
-import {
-  getUserFromPrisma,
-  saveUserInPrisma,
-  saveUserInfo,
-} from "@/utils/common";
+import { saveUserInfo } from "@/utils/common";
+import { getUserFromPrisma, saveUserInPrisma } from "@/utils/prisma/user";
 import Card from "../../ui/Card";
 import CardHeader from "../../ui/CardHeader";
 import { useState } from "react";
 import FormInput from "@/components/ui/FormInput";
-import prisma from "@/lib/prisma";
 
 const EmailOTP = ({ token, setToken }: LoginProps) => {
   const { magic } = useMagic();

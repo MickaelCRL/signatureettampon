@@ -1,9 +1,21 @@
 import Spacer from "@/components/ui/Spacer";
 import { useEdgeStore } from "@/lib/edgestore";
-import { sendDocumentSigned, signDocument } from "@/utils/common";
+import { updateDocument } from "@/utils/prisma/document";
+import { createSignatory } from "@/utils/prisma/signatory";
+import { sendDocumentToSign, sendDocumentSigned } from "@/utils/common";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Button,
+} from "@mui/material";
 import WebViewer from "@pdftron/webviewer";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
+import exportAndUploadDocument from "@/utils/exportAndUploadDocument";
 
 function WebviewerComponent({ documentData }: { documentData: any }) {
   const viewer = useRef(null);
@@ -12,19 +24,16 @@ function WebviewerComponent({ documentData }: { documentData: any }) {
   const [instance, setInstance] = useState<any>(null);
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
   const [document, setDocument] = useState(documentData.document);
+  const storedSignatories = localStorage.getItem("signatories");
+  const signatories = storedSignatories ? JSON.parse(storedSignatories) : [];
 
   useEffect(() => {
-    console.log("Document dans webviewer:", documentData);
-    console.log("Document url dans webviewer:", documentData.document.url);
-
     WebViewer(
       {
         path: "/webviewer/lib",
         licenseKey:
           "demo:1718657188013:7fbff2190300000000ddadd08e42549a2cea8d0bb514c40e12f3b0ac02",
         initialDoc: document.url,
-        // enableFilePicker: true,
-        // fullAPI: true,
         disabledElements: [
           "rubberStampToolGroupButton",
           "signatureToolGroupButton",
@@ -44,17 +53,15 @@ function WebviewerComponent({ documentData }: { documentData: any }) {
 
       documentViewer.addEventListener("documentLoaded", async () => {
         const doc = documentViewer.getDocument();
-        const nbPage = documentViewer.getPageCount();
-
-        console.log("Document loaded:", doc);
-        console.log("Document name:", document.name);
-        console.log("Page count:", nbPage);
-
         await new Promise((resolve) => setTimeout(resolve, 1000));
-
         const fieldManager = annotationManager.getFieldManager();
         const fields = fieldManager.getFields();
+        logFields(fields);
+      });
 
+      documentViewer.addEventListener("annotationsLoaded", async () => {
+        const fieldManager = annotationManager.getFieldManager();
+        const fields = fieldManager.getFields();
         logFields(fields);
       });
 
@@ -76,7 +83,6 @@ function WebviewerComponent({ documentData }: { documentData: any }) {
       );
 
       setInstance(instance);
-      return instance;
     });
   }, []);
 
@@ -85,111 +91,90 @@ function WebviewerComponent({ documentData }: { documentData: any }) {
       console.log("Field type:", field.type);
       console.log("Field name:", field.name);
       console.log("Field value:", field.value);
-      console.log("Field initial signatories", field.initialSignatories);
-      console.log("Field nb signature", field.nbSignature);
     });
   }
 
-  // console.log("Field page:", field.widgets![0].PageNumber);
-  function verifyFields(_fields: any[], _nbPage: number) {
-    let nbInitials: number;
-    let nbSignature: number;
-
-    console.log("Verifying fields clicked");
-
-    for (let i = 0; i < _nbPage; i++) {
-      nbInitials = 0;
-      nbSignature = 0;
-
-      _fields.forEach((field) => {
-        if (field.widgets[0].PageNumber !== i + 1) {
-          return;
-        }
-
-        if (field.type === "Sig") {
-          nbSignature++;
-          if (field.value === "") {
-            console.log("Signature not filled correctly");
-            return false;
-          } else {
-            console.log("Signature filled correctly");
-            return true;
-          }
-        }
-
-        if (field.type === "initial") {
-          nbInitials++;
-          if (field.value === "") {
-            console.log("Initials not filled correctly");
-            return false;
-          } else {
-            console.log("Initials filled correctly");
-            return true;
-          }
-        }
-      });
-    }
-  }
-
   const handleFinish = async () => {
-    const storedSignatories = localStorage.getItem("signatories");
-    const signatories = storedSignatories ? JSON.parse(storedSignatories) : [];
+    const res = await exportAndUploadDocument(instance, document, edgestore);
+
+    console.log("res:", res);
+    console.log("res.url:", res.url);
+    console.log("document.url:", document.url);
+
+    try {
+      document.url = res.url;
+      document.isSigned = true;
+      await updateDocument(document);
+    } catch (error) {
+      console.error("Error in signDocument:", error);
+    }
+    console.log("res.url:", res.url);
+    console.log("document.url:", document.url);
 
     if (signatories.length === 0) {
-      if (instance) {
-        const { documentViewer, annotationManager } = instance.Core;
-        const doc = documentViewer.getDocument();
-
-        const xfdfString = await annotationManager.exportAnnotations();
-        const options = { xfdfString, flatten: true };
-
-        const data = await doc.getFileData(options);
-        const arr = new Uint8Array(data);
-        const blob = new Blob([arr], { type: "application/pdf" });
-
-        const file = new File([blob], document.name, {
-          type: "application/pdf",
-        });
-
-        const res = await edgestore.publicFiles.upload({
-          file,
-          options: {
-            replaceTargetUrl: document.url,
-          },
-        });
-
-        console.log("idDocument:", document.idDocument);
-        try {
-          await signDocument(document.idDocument, true);
-        } catch (error) {
-          console.error("Error in signDocument:", error);
-        }
-
-        try {
-          await sendDocumentSigned(email, res.url);
-        } catch (error) {
-          console.error("Error in sendDocumentSigned:", error);
-        }
-
-        router.push(`/signing-complete/${encodeURIComponent(document.name)}`);
-      } else {
-        alert("Please complete all signatures before finishing.");
+      try {
+        await sendDocumentSigned(email, document.url);
+      } catch (error) {
+        console.error("Error in sendDocumentSigned:", error);
       }
+
+      router.push(`/signing-complete/${encodeURIComponent(document.name)}`);
+    } else {
+      for (const signatory of signatories) {
+        console.log("signatory:", signatory);
+        await createSignatory(signatory, document.idDocument);
+        console.log("sendDocumentToSign:");
+        await sendDocumentToSign(signatory.email, document.idDocument);
+      }
+      console.log("Signatories created successfully");
     }
   };
 
   return (
     <>
-      <div
-        className="webviewer"
-        ref={viewer}
-        style={{
-          height: "100vh",
-          width: "70%",
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
-      ></div>
+      <div className="container-webviewer">
+        <div
+          className="webviewer"
+          ref={viewer}
+          style={{
+            height: "100vh",
+            width: "70%",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        ></div>
+        {/* <div className="option-webviewer">
+          <Box sx={{ minWidth: 120 }}>
+            <FormControl fullWidth>
+              <InputLabel id="signatory-select-label">
+                Ajouter une signature pour
+              </InputLabel>
+              <Select
+                labelId="signatory-select-label"
+                id="signatory-select"
+                value={selectedSignatory}
+                label="Ajouter une signature pour"
+                onChange={handleChange}
+              >
+                {signatories.map((signatory: any, index: number) => (
+                  <MenuItem key={index} value={signatory.email}>
+                    {`${signatory.firstName} ${signatory.lastName}`}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          <Button
+            draggable
+            onDragStart={handleDragStart}
+            variant="contained"
+            color="primary"
+            style={{ marginTop: 20 }}
+          >
+            Drag Signature
+          </Button>
+        </div> */}
+      </div>
       <Spacer size={30} />
 
       <button className="btn-primary" onClick={handleFinish}>

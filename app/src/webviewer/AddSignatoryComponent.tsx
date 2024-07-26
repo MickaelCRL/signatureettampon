@@ -47,7 +47,10 @@ function AddSignatoryComponent() {
     }
     if (!valid) return;
     console.log("Signatory added with email:", email);
-    setSignatories([...signatories, { firstName, lastName, email }]);
+    setSignatories([
+      ...signatories,
+      { firstName, lastName, email, hasSigned: false },
+    ]);
     setFirstName("");
     setLastName("");
     setEmail("");

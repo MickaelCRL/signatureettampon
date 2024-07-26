@@ -57,3 +57,6 @@ CREATE TABLE "Sign" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Signatory_email_key" ON "Signatory"("email");

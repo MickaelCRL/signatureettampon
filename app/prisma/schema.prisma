@@ -55,7 +55,7 @@ model Signatory {
   idSignatory String  @id @default(cuid())
   firstName   String
   lastName    String
-  email       String
+  email       String  @unique
   hasSigned   Boolean
   signs       Sign[]
 }

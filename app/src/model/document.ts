@@ -6,3 +6,5 @@ interface Document {
   isSigned: boolean;
   envelope?: string;
 }
+
+export default Document;

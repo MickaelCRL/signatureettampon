@@ -1,5 +1,5 @@
 import Spacer from "@/components/ui/Spacer";
-import { createEnvelope } from "@/utils/common";
+import { createEnvelope } from "@/utils/prisma/envelope";
 import { LoginProps } from "@/utils/types";
 import { useRouter } from "next/router";
 import { useState } from "react";

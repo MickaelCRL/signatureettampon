@@ -10,16 +10,16 @@ import Login from "@/components/magic/Login";
 import MagicDashboardRedirect from "@/components/magic/MagicDashboardRedirect";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import DocumentContext from "@/utils/DocumentContext";
+import { useDocumentContext } from "@/context/DocumentContext";
 
 function PageSigndocument() {
   const { token, setToken } = useContext(TokenContext);
-  const { document, setDocument } = useContext(DocumentContext);
 
   const WebviewerComponent = dynamic(
     () => import("@/webviewer/WebviewerComponent"),
     { ssr: false }
   );
+
   return (
     <>
       <MagicProvider>
@@ -29,7 +29,7 @@ function PageSigndocument() {
             <>
               <Header isLoggedIn={true} token={token} setToken={setToken} />
               <Spacer size={30} />
-              {document && <WebviewerComponent documentData={document} />}
+              <WebviewerComponent />
 
               <Spacer size={30} />
             </>

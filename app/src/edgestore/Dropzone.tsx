@@ -2,16 +2,14 @@
 import * as React from "react";
 import { useEdgeStore } from "../lib/edgestore";
 import { useState } from "react";
+import { useDocumentContext } from "@/context/DocumentContext";
 
-interface DropzoneProps {
-  onUploadComplete: (documentInfo: Document) => void;
-}
-
-export default function Dropzone({ onUploadComplete }: DropzoneProps) {
+export default function Dropzone() {
   const [file, setFile] = useState<File>();
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const { edgestore } = useEdgeStore();
+  const { document, setDocument } = useDocumentContext();
 
   const handleUpload = async () => {
     if (file) {
@@ -24,14 +22,14 @@ export default function Dropzone({ onUploadComplete }: DropzoneProps) {
         },
       });
       setUploading(false);
-
-      // Pass the document information to the parent component
-      onUploadComplete({
+      // Pass the document information to the context
+      setDocument({
         name: file.name,
         url: res.url,
         hash: "",
         isSigned: false,
-      } as Document);
+      });
+
       console.log(res);
     }
   };

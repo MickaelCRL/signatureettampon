@@ -4,7 +4,7 @@ import "@/styles/header.css";
 import "@/styles/userpopup.css";
 import "@/styles/addsignatories.css";
 import { TokenProvider } from "@/utils/TokenContext";
-import { DocumentProvider } from "@/utils/DocumentContext";
+import { DocumentProvider } from "@/context/DocumentContext";
 import type { AppProps } from "next/app";
 import { EdgeStoreProvider } from "@/lib/edgestore";
 

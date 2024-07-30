@@ -6,7 +6,7 @@ import Spacer from "@/components/ui/Spacer";
 import Dropzone from "@/edgestore/Dropzone";
 import { createDocument } from "@/utils/prisma/document";
 import { getUserEnvelope } from "@/utils/prisma/envelope";
-import DocumentContext from "@/utils/DocumentContext";
+import { useDocumentContext } from "@/context/DocumentContext";
 import TokenContext from "@/utils/TokenContext";
 import AddSignatoryComponent from "@/webviewer/AddSignatoryComponent";
 import { useRouter } from "next/router";
@@ -16,7 +16,7 @@ import { set } from "zod";
 function PageUploadFile() {
   const { token, setToken } = useContext(TokenContext);
   const router = useRouter();
-  const { document, setDocument } = useContext(DocumentContext);
+  const { document, setDocument } = useDocumentContext();
 
   async function handleNextClick() {
     if (document) {
@@ -35,7 +35,7 @@ function PageUploadFile() {
 
       console.log("Document created:", documentCreated);
 
-      setDocument(documentCreated);
+      setDocument(documentCreated.document);
 
       await router.push({
         pathname: "/sign-document",
@@ -57,7 +57,7 @@ function PageUploadFile() {
             marginRight: "auto",
           }}
         >
-          <Dropzone onUploadComplete={setDocument}></Dropzone>
+          <Dropzone></Dropzone>
         </div>
         <Spacer size={30}></Spacer>
         <AddSignatoryComponent></AddSignatoryComponent>

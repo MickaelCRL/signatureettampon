@@ -12,79 +12,150 @@ import {
   SelectChangeEvent,
   Button,
 } from "@mui/material";
-import WebViewer from "@pdftron/webviewer";
+import WebViewer, { WebViewerInstance } from "@pdftron/webviewer";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
+import { useDocumentContext } from "@/context/DocumentContext";
 import exportAndUploadDocument from "@/utils/exportAndUploadDocument";
 
-function WebviewerComponent({ documentData }: { documentData: any }) {
-  const viewer = useRef(null);
+function WebviewerComponent() {
+  const viewer = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { edgestore } = useEdgeStore();
   const [instance, setInstance] = useState<any>(null);
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
-  const [document, setDocument] = useState(documentData.document);
+  const [selectedSignatory, setSelectedSignatory] = useState("");
+  const { document, setDocument } = useDocumentContext();
   const storedSignatories = localStorage.getItem("signatories");
   const signatories = storedSignatories ? JSON.parse(storedSignatories) : [];
 
   useEffect(() => {
-    WebViewer(
-      {
-        path: "/webviewer/lib",
-        licenseKey:
-          "demo:1718657188013:7fbff2190300000000ddadd08e42549a2cea8d0bb514c40e12f3b0ac02",
-        initialDoc: document.url,
-        disabledElements: [
-          "rubberStampToolGroupButton",
-          "signatureToolGroupButton",
-          "stampToolGroupButton",
-          "fileAttachmentToolGroupButton",
-          "calloutToolGroupButton",
-          "eraserToolButton",
-          "undoButton",
-          "redoButton",
-          "toolsHeader",
-        ],
-      },
-      viewer.current!
-    ).then((instance) => {
-      instance.UI.enableFeatures([instance.UI.Feature.Initials]);
-      const { documentViewer, annotationManager } = instance.Core;
+    if (viewer.current && document) {
+      WebViewer(
+        {
+          path: "/webviewer/lib",
+          licenseKey:
+            "demo:1718657188013:7fbff2190300000000ddadd08e42549a2cea8d0bb514c40e12f3b0ac02",
+          initialDoc: document.url,
+          disabledElements: [
+            "rubberStampToolGroupButton",
+            "signatureToolGroupButton",
+            "stampToolGroupButton",
+            "fileAttachmentToolGroupButton",
+            "calloutToolGroupButton",
+            "eraserToolButton",
+            "undoButton",
+            "redoButton",
+            "toolsHeader",
+          ],
+        },
+        viewer.current
+      ).then((instance) => {
+        setInstance(instance);
+        const { documentViewer, annotationManager, Annotations } =
+          instance.Core;
 
-      documentViewer.addEventListener("documentLoaded", async () => {
-        const doc = documentViewer.getDocument();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        const fieldManager = annotationManager.getFieldManager();
-        const fields = fieldManager.getFields();
-        logFields(fields);
-      });
+        documentViewer.loadDocument(document.url);
 
-      documentViewer.addEventListener("annotationsLoaded", async () => {
-        const fieldManager = annotationManager.getFieldManager();
-        const fields = fieldManager.getFields();
-        logFields(fields);
-      });
-
-      annotationManager.addEventListener(
-        "annotationChanged",
-        (annotations, action) => {
+        documentViewer.addEventListener("annotationsLoaded", async () => {
           const fieldManager = annotationManager.getFieldManager();
           const fields = fieldManager.getFields();
-          if (action === "add") {
-            console.log("this is a change that added annotations");
-          } else if (action === "modify") {
-            console.log("this change modified annotations");
-          } else if (action === "delete") {
-            console.log("there were annotations deleted");
-          }
-
           logFields(fields);
-        }
-      );
+        });
 
-      setInstance(instance);
-    });
-  }, []);
+        annotationManager.addEventListener(
+          "annotationChanged",
+          (annotations, action) => {
+            if (
+              action === "add" ||
+              action === "modify" ||
+              action === "delete"
+            ) {
+              const fieldManager = annotationManager.getFieldManager();
+              const fields = fieldManager.getFields();
+              logFields(fields);
+            }
+          }
+        );
+
+        const { iframeWindow } = instance.UI;
+        const iframeDoc = iframeWindow.document.body;
+        iframeDoc.addEventListener("dragover", dragOver);
+        iframeDoc.addEventListener("drop", (e) => {
+          drop(e, instance);
+        });
+
+        instance.UI.enableFeatures([instance.UI.Feature.Initials]);
+      });
+    }
+  }, [document]);
+
+  const dragOver = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    return false;
+  };
+
+  const drop = (e: DragEvent, instance: WebViewerInstance) => {
+    console.log("drop");
+    try {
+      const { documentViewer, annotationManager, Annotations } = instance.Core;
+      const { WidgetFlags } = Annotations;
+      const scrollElement = documentViewer.getScrollViewElement();
+      const scrollLeft = scrollElement.scrollLeft || 0;
+      const scrollTop = scrollElement.scrollTop || 0;
+
+      const dropX = e.pageX + scrollLeft;
+      const dropY = e.pageY + scrollTop;
+
+      const flags = new WidgetFlags();
+      flags.set("Required", true);
+
+      const fieldName = `SignatureField_${Date.now()}`;
+      const newField = new Annotations.Forms.Field(fieldName, {
+        type: "Sig",
+        flags,
+      });
+
+      console.log("Field type:", newField.type);
+      console.log("Field name:", newField.name);
+      console.log("Field value:", newField.value);
+
+      // Créer un widget d'annotation de signature
+      const widgetAnnot = new Annotations.SignatureWidgetAnnotation(newField, {
+        appearance: "_DEFAULT",
+        appearances: {
+          _DEFAULT: {
+            Normal: {
+              offset: {
+                x: 100,
+                y: 100,
+              },
+            },
+          },
+        },
+      });
+
+      // Définir les propriétés du widget
+      widgetAnnot.PageNumber = documentViewer.getCurrentPage();
+      widgetAnnot.X = dropX;
+      widgetAnnot.Y = dropY;
+      widgetAnnot.Width = 150;
+      widgetAnnot.Height = 30;
+
+      // Ajouter le champ et le widget au gestionnaire de champs
+      annotationManager.getFieldManager().addField(newField);
+
+      // Ajouter et dessiner l'annotation
+      annotationManager.addAnnotation(widgetAnnot);
+      annotationManager.drawAnnotationsFromList([widgetAnnot]);
+
+      e.preventDefault();
+      console.log("drop");
+    } catch (error) {
+      console.error("Error in drop function:", error);
+    }
+    return false;
+  };
 
   function logFields(fields: any[]) {
     fields.forEach((field) => {
@@ -97,29 +168,15 @@ function WebviewerComponent({ documentData }: { documentData: any }) {
   const handleFinish = async () => {
     const res = await exportAndUploadDocument(instance, document, edgestore);
 
-    console.log("res:", res);
-    console.log("res.url:", res.url);
-    console.log("document.url:", document.url);
-
     try {
       document.url = res.url;
-      console.log("document.isSigned:", document.isSigned);
+      document.isSigned = true;
       await updateDocument(document);
     } catch (error) {
       console.error("Error in signDocument:", error);
     }
-    console.log("res.url:", res.url);
-    console.log("document.url:", document.url);
 
     if (signatories.length === 0) {
-      try {
-        document.url = res.url;
-        document.isSigned = true;
-        await updateDocument(document);
-      } catch (error) {
-        console.error("Error in signDocument:", error);
-      }
-
       try {
         await sendDocumentSigned(email, document.url);
       } catch (error) {
@@ -129,18 +186,28 @@ function WebviewerComponent({ documentData }: { documentData: any }) {
       router.push(`/signing-complete/${encodeURIComponent(document.name)}`);
     } else {
       for (const signatory of signatories) {
-        console.log("signatory:", signatory);
         await createSignatory(signatory, document.idDocument);
-        console.log("sendDocumentToSign:");
         await sendDocumentToSign(signatory.email, document.idDocument);
       }
       console.log("Signatories created successfully");
     }
   };
 
+  const handleChange = (event: SelectChangeEvent<string>) => {
+    setSelectedSignatory(event.target.value);
+  };
+
+  const handleDragStart = (event: React.DragEvent<HTMLButtonElement>) => {
+    event.dataTransfer.setData("text/plain", "signature");
+  };
+
   return (
     <>
-      <div className="container-webviewer">
+      <div
+        className="container-webviewer"
+        onDragOver={(e) => e.preventDefault()}
+        style={{ display: "flex" }}
+      >
         <div
           className="webviewer"
           ref={viewer}
@@ -151,7 +218,7 @@ function WebviewerComponent({ documentData }: { documentData: any }) {
             marginRight: "auto",
           }}
         ></div>
-        {/* <div className="option-webviewer">
+        <div className="option-webviewer">
           <Box sx={{ minWidth: 120 }}>
             <FormControl fullWidth>
               <InputLabel id="signatory-select-label">
@@ -181,13 +248,17 @@ function WebviewerComponent({ documentData }: { documentData: any }) {
           >
             Drag Signature
           </Button>
-        </div> */}
+        </div>
       </div>
       <Spacer size={30} />
-
-      <button className="btn-primary" onClick={handleFinish}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleFinish}
+        style={{ marginTop: 20 }}
+      >
         Terminer
-      </button>
+      </Button>
     </>
   );
 }

@@ -8,33 +8,38 @@ import WebViewer from "@pdftron/webviewer";
 import React, { useEffect, useRef, useState } from "react";
 import { useEdgeStore } from "@/lib/edgestore";
 import { useDocumentContext } from "@/context/DocumentContext";
-import { set } from "zod";
-import signatory from "@/pages/api/db/signatory";
+import { useUserContext } from "@/context/UserContext";
+import { useRouter } from "next/router";
 
 function SignDocument({ idDocument }: { idDocument: any }) {
   const viewer = useRef(null);
   const { document, setDocument } = useDocumentContext();
   const [instance, setInstance] = useState<any>(null);
   const { edgestore } = useEdgeStore();
+  const { user } = useUserContext();
+  const [annotPosition, setAnnotPosition] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
 
   useEffect(() => {
-    console.log("email", email);
     const fetchDocument = async () => {
       try {
         const doc = await getDocumentByIdForSignatory(email, idDocument);
         setDocument(doc?.document);
+        setLoading(false);
+        console.log("doc", doc);
       } catch (error) {
         console.error("Error fetching document:", error);
+        setLoading(false);
       }
     };
 
     fetchDocument();
-  }, [email, idDocument]);
+  }, [idDocument]);
 
   useEffect(() => {
-    console.log("document :", document);
-    console.log("document url :", document.url);
+    if (!document?.url) return;
     WebViewer(
       {
         path: "/webviewer/lib",
@@ -55,38 +60,69 @@ function SignDocument({ idDocument }: { idDocument: any }) {
       },
       viewer.current!
     ).then((instance) => {
-      const { documentViewer, annotationManager } = instance.Core;
+      const { documentViewer, annotationManager, Annotations } = instance.Core;
 
-      // Ensure the document is fully loaded
       documentViewer.addEventListener("documentLoaded", async () => {
-        const doc = documentViewer.getDocument();
+        annotationManager.addEventListener(
+          "annotationChanged",
+          (annotations, action, { imported }) => {
+            if (imported && action === "add") {
+              annotations.forEach((annot: any) => {
+                if (annot instanceof Annotations.WidgetAnnotation) {
+                  if (!annot.fieldName.startsWith(email)) {
+                    annot.Hidden = true;
+                    annot.Listable = false;
+                  }
+                }
+              });
+            }
+          }
+        );
 
-        // Wait for annotations to be loaded
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        documentViewer.addEventListener("annotationsLoaded", async () => {
-          const fieldManager = annotationManager.getFieldManager();
-          const fields = fieldManager.getFields();
-          console.log("Fields:", fields);
+        const annots = annotationManager.getAnnotationsList();
+        annots.forEach((annot) => {
+          if (annot instanceof Annotations.WidgetAnnotation) {
+            if (!annot.fieldName.startsWith(email)) {
+              annot.Hidden = true;
+              annot.Listable = false;
+            }
+          }
         });
-
-        // Fetch the annotations
-        const annotations = annotationManager.getAnnotationsList();
-
-        console.log("Annotations:", annotations);
-
-        // Display annotations or perform other actions
 
         setInstance(instance);
       });
     });
-  }, []);
+  }, [document]);
+
+  const nextField = () => {
+    const annots = instance?.Core.annotationManager.getAnnotationsList() || [];
+    if (annots[annotPosition]) {
+      instance?.Core.annotationManager.jumpToAnnotation(annots[annotPosition]);
+      if (annots[annotPosition + 1]) {
+        setAnnotPosition(annotPosition + 1);
+      }
+    }
+  };
+
+  const prevField = () => {
+    const annots = instance?.Core.annotationManager.getAnnotationsList() || [];
+    if (annots[annotPosition]) {
+      instance?.Core.annotationManager.jumpToAnnotation(annots[annotPosition]);
+      if (annots[annotPosition - 1]) {
+        setAnnotPosition(annotPosition - 1);
+      }
+    }
+  };
 
   async function handleFinish() {
     const res = await exportAndUploadDocument(instance, document, edgestore);
-
     await updateSignatoryStatus(email, true);
+
+    // Redirection vers l'écran de base
+    router.push("/"); // Assurez-vous que "/" est le bon chemin pour votre écran de base
   }
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <>
@@ -102,6 +138,18 @@ function SignDocument({ idDocument }: { idDocument: any }) {
           }}
         ></div>
       </div>
+      <Spacer size={30} />
+
+      <button className="btn-primary" onClick={prevField}>
+        Previous Field
+      </button>
+
+      <Spacer size={30} />
+
+      <button className="btn-primary" onClick={nextField}>
+        Next Field
+      </button>
+
       <Spacer size={30} />
 
       <button className="btn-primary" onClick={handleFinish}>

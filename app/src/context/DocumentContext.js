@@ -1,5 +1,3 @@
-// context/DocumentContext.js
-
 import { createContext, useContext, useState, useEffect } from "react";
 
 export const DocumentContext = createContext();
@@ -9,7 +7,7 @@ export const DocumentProvider = ({ children }) => {
 
   useEffect(() => {
     console.log("Dans le contexte document");
-    const storedDocument = localStorage.getItem("document");
+    const storedDocument = sessionStorage.getItem("document");
     console.log("storedDocument", storedDocument);
     if (storedDocument) {
       setDocument(JSON.parse(storedDocument));
@@ -18,7 +16,7 @@ export const DocumentProvider = ({ children }) => {
 
   const setDocument = (doc) => {
     setDocumentState(doc);
-    localStorage.setItem("document", JSON.stringify(doc));
+    sessionStorage.setItem("document", JSON.stringify(doc));
   };
 
   return (

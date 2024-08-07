@@ -17,6 +17,7 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { useDocumentContext } from "@/context/DocumentContext";
 import exportAndUploadDocument from "@/utils/exportAndUploadDocument";
+import { useUserContext } from "@/context/UserContext";
 
 function WebviewerComponent() {
   const viewer = useRef<HTMLDivElement>(null);
@@ -24,10 +25,18 @@ function WebviewerComponent() {
   const { edgestore } = useEdgeStore();
   const [instance, setInstance] = useState<any>(null);
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
-  const [selectedSignatory, setSelectedSignatory] = useState("");
+  const { user, setUser } = useUserContext();
+  const [selectedSignatory, setSelectedSignatory] = useState<string>(
+    email || ""
+  );
+  const selectedSignatoryRef = useRef(selectedSignatory);
   const { document, setDocument } = useDocumentContext();
   const storedSignatories = localStorage.getItem("signatories");
   const signatories = storedSignatories ? JSON.parse(storedSignatories) : [];
+
+  useEffect(() => {
+    selectedSignatoryRef.current = selectedSignatory;
+  }, [selectedSignatory]);
 
   useEffect(() => {
     if (viewer.current && document) {
@@ -55,28 +64,9 @@ function WebviewerComponent() {
         const { documentViewer, annotationManager, Annotations } =
           instance.Core;
 
+        instance.UI.enableFeatures([instance.UI.Feature.Initials]);
+
         documentViewer.loadDocument(document.url);
-
-        documentViewer.addEventListener("annotationsLoaded", async () => {
-          const fieldManager = annotationManager.getFieldManager();
-          const fields = fieldManager.getFields();
-          logFields(fields);
-        });
-
-        annotationManager.addEventListener(
-          "annotationChanged",
-          (annotations, action) => {
-            if (
-              action === "add" ||
-              action === "modify" ||
-              action === "delete"
-            ) {
-              const fieldManager = annotationManager.getFieldManager();
-              const fields = fieldManager.getFields();
-              logFields(fields);
-            }
-          }
-        );
 
         const { iframeWindow } = instance.UI;
         const iframeDoc = iframeWindow.document.body;
@@ -85,7 +75,30 @@ function WebviewerComponent() {
           drop(e, instance);
         });
 
-        instance.UI.enableFeatures([instance.UI.Feature.Initials]);
+        documentViewer.addEventListener("annotationsLoaded", () => {
+          console.log("annotationsLoaded");
+          const fields = annotationManager.getFieldManager().getFields();
+          for (var field in fields) {
+            console.log(fields[field].type);
+            console.log(fields[field].value);
+          }
+        });
+
+        annotationManager.addEventListener(
+          "annotationChanged",
+          (annotations, action) => {
+            if (action === "add") {
+              const fields = annotationManager.getFieldManager().getFields();
+              for (var field in fields) {
+                console.log(fields[field].type);
+              }
+            } else if (action === "modify") {
+              console.log("this change modified annotations");
+            } else if (action === "delete") {
+              console.log("there were annotations deleted");
+            }
+          }
+        );
       });
     }
   }, [document]);
@@ -110,7 +123,9 @@ function WebviewerComponent() {
       const flags = new WidgetFlags();
       flags.set("Required", true);
 
-      const fieldName = `SignatureField_${Date.now()}`;
+      console.log("Selected signatory:", selectedSignatoryRef.current);
+
+      const fieldName = selectedSignatoryRef.current;
       const newField = new Annotations.Forms.Field(fieldName, {
         type: "Sig",
         flags,
@@ -157,14 +172,6 @@ function WebviewerComponent() {
     return false;
   };
 
-  function logFields(fields: any[]) {
-    fields.forEach((field) => {
-      console.log("Field type:", field.type);
-      console.log("Field name:", field.name);
-      console.log("Field value:", field.value);
-    });
-  }
-
   const handleFinish = async () => {
     const res = await exportAndUploadDocument(instance, document, edgestore);
 
@@ -178,7 +185,7 @@ function WebviewerComponent() {
 
     if (signatories.length === 0) {
       try {
-        await sendDocumentSigned(email, document.url);
+        await sendDocumentSigned(email);
       } catch (error) {
         console.error("Error in sendDocumentSigned:", error);
       }
@@ -194,7 +201,10 @@ function WebviewerComponent() {
   };
 
   const handleChange = (event: SelectChangeEvent<string>) => {
+    console.log("debut handle chaner");
+    console.log("Selected signatory:", event.target.value);
     setSelectedSignatory(event.target.value);
+    console.log("fin handle chaner");
   };
 
   const handleDragStart = (event: React.DragEvent<HTMLButtonElement>) => {
@@ -231,6 +241,9 @@ function WebviewerComponent() {
                 label="Ajouter une signature pour"
                 onChange={handleChange}
               >
+                <MenuItem
+                  value={user.email}
+                >{`${user.firstName} ${user.lastName}`}</MenuItem>
                 {signatories.map((signatory: any, index: number) => (
                   <MenuItem key={index} value={signatory.email}>
                     {`${signatory.firstName} ${signatory.lastName}`}

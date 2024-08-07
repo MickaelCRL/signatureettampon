@@ -7,7 +7,7 @@ const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
-    const { email, documentUrl } = req.body;
+    const { email } = req.body;
     try {
       const { data, error } = await resend.emails.send({
         from: "contact@signatureettampon.com",
@@ -31,7 +31,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 Le document que vous avez signé est disponible pour visualisation et téléchargement :
               </p>
               <p style="font-size: 1.125rem; line-height: 1.5;">
-                <a href="${documentUrl}" style="color: #ff0000; text-decoration: none; border: 1px solid #ff0000; padding: 10px; border-radius: 5px;">Voir le document signé</a>
+                <a href="http://localhost:3000" style="color: #ff0000; text-decoration: none; border: 1px solid #ff0000; padding: 10px; border-radius: 5px;">Voir le document signé</a>
               </p>
               <p style="font-size: 1.125rem; line-height: 1.5;">
                 Vous pouvez cliquer sur le lien ci-dessus pour accéder au document signé électroniquement et le télécharger si nécessaire.

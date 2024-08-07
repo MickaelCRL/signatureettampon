@@ -11,7 +11,7 @@ export const logout = async (
     await magic?.user.logout();
   }
   localStorage.setItem("token", "");
-  localStorage.setItem("user", "");
+  localStorage.setItem("userAddress", "");
   setToken("");
 };
 
@@ -24,18 +24,18 @@ export const saveUserInfo = (
   localStorage.setItem("token", token);
   localStorage.setItem("isAuthLoading", "false");
   localStorage.setItem("loginMethod", loginMethod);
-  localStorage.setItem("user", userAddress);
+  localStorage.setItem("userAddress", userAddress);
   localStorage.setItem("email", email);
 };
 
-export async function sendDocumentSigned(email: string, documentUrl: string) {
+export async function sendDocumentSigned(email: string) {
   try {
-    const res = await fetch("/api/resend/send", {
+    const res = await fetch("/api/resend/documentSigned", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, documentUrl }),
+      body: JSON.stringify({ email }),
     });
 
     if (!res.ok) {

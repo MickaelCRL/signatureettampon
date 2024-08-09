@@ -1,15 +1,3 @@
-.btn-primary {
-  background-color: #007bff; /* Couleur de fond bleue */
-  color: white; /* Texte blanc */
-  border: none;
-  padding: 10px 20px; /* Ajustez le padding selon vos besoins */
-  font-size: 16px; /* Taille de la police */
-  cursor: pointer;
-  border-radius: 5px; /* Bords arrondis */
-  display: block; /* Pour centrer le bouton */
-  margin: 0 auto; /* Centrage horizontal */
-}
-
 .title-center {
   text-align: center; /* Centrer le texte */
   font-size: 24px; /* Taille de la police pour un titre */

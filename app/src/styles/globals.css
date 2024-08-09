@@ -27,3 +27,15 @@ section {
 .gap {
   gap: 75px;
 }
+
+.btn-primary {
+  background-color: #c49a2d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 25p;
+  display: block;
+  margin: 0 auto;
+}

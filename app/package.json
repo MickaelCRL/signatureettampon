@@ -16,6 +16,7 @@
     "@emotion/styled": "^11.13.0",
     "@fontsource/roboto": "^5.0.13",
     "@magic-ext/oauth": "^15.0.0",
+    "@mui/icons-material": "^5.16.6",
     "@mui/material": "^5.16.4",
     "@pdftron/webviewer": "^10.10.1",
     "@prisma/client": "^5.16.1",

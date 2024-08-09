@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "@/components/magic/Login";
-import Dashboard from "@/components/magic/Dashboard";
+import Dashboard from "@/components/Dashboard";
 import MagicDashboardRedirect from "@/components/magic/MagicDashboardRedirect";
 import TokenContext from "@/utils/TokenContext";
 

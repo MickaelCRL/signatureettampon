@@ -1,4 +1,4 @@
-import Header from "@/components/magic/Header";
+import Header from "@/components/Header";
 import MagicProvider from "@/components/magic/MagicProvider";
 import Spacer from "@/components/ui/Spacer";
 import TokenContext from "@/utils/TokenContext";

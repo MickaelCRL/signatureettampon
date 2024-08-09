@@ -1,8 +1,7 @@
 "use client";
 
-import Header from "@/components/magic/Header";
+import Header from "@/components/Header";
 import MagicProvider from "@/components/magic/MagicProvider";
-import Spacer from "@/components/ui/Spacer";
 import Dropzone from "@/edgestore/Dropzone";
 import { createDocument } from "@/utils/prisma/document";
 import { getUserEnvelope } from "@/utils/prisma/envelope";
@@ -47,27 +46,16 @@ function PageUploadFile() {
     <>
       <MagicProvider>
         <Header isLoggedIn={true} token={token} setToken={setToken} />
-        <Spacer size={30}></Spacer>
-        <p className="title-center">Ajouter un document </p>
-        <div
-          style={{
-            border: "1px solid #ccc",
-            width: "70%",
-            marginLeft: "auto",
-            marginRight: "auto",
-          }}
-        >
-          <Dropzone></Dropzone>
-        </div>
-        <Spacer size={30}></Spacer>
-        <AddSignatoryComponent></AddSignatoryComponent>
 
-        <Spacer size={30}></Spacer>
+        <p className="title-center">Ajouter un document </p>
+
+        <Dropzone></Dropzone>
+
+        <AddSignatoryComponent></AddSignatoryComponent>
 
         <button onClick={handleNextClick} className="btn-primary">
           Suivant
         </button>
-        <Spacer size={30}></Spacer>
       </MagicProvider>
     </>
   );

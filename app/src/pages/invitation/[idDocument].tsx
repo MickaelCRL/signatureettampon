@@ -1,4 +1,4 @@
-import Header from "@/components/magic/Header";
+import Header from "@/components/Header";
 import MagicProvider from "@/components/magic/MagicProvider";
 import TokenContext from "@/utils/TokenContext";
 import { LoginProps } from "@/utils/types";

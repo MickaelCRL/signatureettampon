@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import WebviewerContainer from "@/webviewer/WebviewerComponent";
-import Header from "@/components/magic/Header";
+import Header from "@/components/Header";
 import Spacer from "@/components/ui/Spacer";
 import { LoginProps } from "@/utils/types";
 import TokenContext from "@/utils/TokenContext";

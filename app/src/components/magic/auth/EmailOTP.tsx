@@ -5,10 +5,36 @@ import { RPCError, RPCErrorCode } from "magic-sdk";
 import { LoginProps } from "@/utils/types";
 import { saveUserInfo } from "@/utils/common";
 import { getUserFromPrisma, saveUserInPrisma } from "@/utils/prisma/user";
-import Card from "../../ui/Card";
-import CardHeader from "../../ui/CardHeader";
 import { useState } from "react";
-import FormInput from "@/components/ui/FormInput";
+import { useUserContext } from "@/context/UserContext";
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import CssBaseline from "@mui/material/CssBaseline";
+import TextField from "@mui/material/TextField";
+import Paper from "@mui/material/Paper";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Image from "next/image";
+import Logo from "/public/images/logo-signatureettampon.png"; // Importer le logo
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#edc315", // Jaune pour les boutons
+    },
+    secondary: {
+      main: "#c49a2d", // Jaune foncé pour d'autres éléments
+    },
+    background: {
+      default: "#303030", // Fond gris
+    },
+  },
+  typography: {
+    fontFamily: ["Poppins", "Oswald", "Montserrat"].join(","),
+  },
+});
 
 const EmailOTP = ({ token, setToken }: LoginProps) => {
   const { magic } = useMagic();
@@ -20,6 +46,7 @@ const EmailOTP = ({ token, setToken }: LoginProps) => {
   const [emailError, setEmailError] = useState(false);
   const [isLoginInProgress, setLoginInProgress] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const { user, setUser } = useUserContext();
 
   const handleLogin = async () => {
     let valid = true;
@@ -65,6 +92,12 @@ const EmailOTP = ({ token, setToken }: LoginProps) => {
             });
             return;
           }
+
+          setUser({
+            firstName,
+            lastName,
+            email,
+          });
         } catch (error) {
           if ((error as any).status !== 404) {
             throw error; // Relever l'erreur si ce n'est pas un 404
@@ -73,14 +106,23 @@ const EmailOTP = ({ token, setToken }: LoginProps) => {
         }
       } else {
         try {
-          const user = await getUserFromPrisma(email);
-          if (!user) {
+          const res = await getUserFromPrisma(email);
+          if (!res) {
             showToast({
               message: "Email not found. Please create an account.",
               type: "error",
             });
             return;
           }
+
+          setFirstName(res.firstName);
+          setLastName(res.lastName);
+
+          setUser({
+            firstName: res.firstName,
+            lastName: res.lastName,
+            email,
+          });
         } catch (error) {
           if ((error as any).status === 404) {
             showToast({
@@ -110,11 +152,6 @@ const EmailOTP = ({ token, setToken }: LoginProps) => {
       if (isCreatingAccount) {
         await saveUserInPrisma({ firstName, lastName, email });
       }
-
-      // Reset form fields
-      setFirstName("");
-      setLastName("");
-      setEmail("");
     } catch (e) {
       console.error("login error:", e);
       if (e instanceof RPCError) {
@@ -143,82 +180,116 @@ const EmailOTP = ({ token, setToken }: LoginProps) => {
   };
 
   return (
-    <Card>
-      <CardHeader id="login">Login / Sign Up</CardHeader>
-      <div className="login-method-grid-item-container">
-        {isCreatingAccount && (
-          <>
-            <FormInput
-              onChange={(e) => {
-                if (firstNameError) setFirstNameError(false);
-                setFirstName(e.target.value);
-              }}
-              placeholder="First Name"
-              value={firstName}
-            />
-            {firstNameError && (
-              <span className="error">First name is required</span>
-            )}
-            <FormInput
-              onChange={(e) => {
-                if (lastNameError) setLastNameError(false);
-                setLastName(e.target.value);
-              }}
-              placeholder="Last Name"
-              value={lastName}
-            />
-            {lastNameError && (
-              <span className="error">Last name is required</span>
-            )}
-          </>
-        )}
-        <FormInput
-          onChange={(e) => {
-            if (emailError) setEmailError(false);
-            setEmail(e.target.value);
+    <ThemeProvider theme={theme}>
+      <Grid container component="main" sx={{ height: "100vh" }}>
+        <CssBaseline />
+        <Grid
+          item
+          xs={false}
+          sm={4}
+          md={7}
+          sx={{
+            position: "relative",
+            backgroundImage: 'url("/images/image-inscription.png")',
+            backgroundSize: "cover", // Assure que l'image couvre toute la largeur disponible
+            backgroundPosition: "center", // Centre l'image
+            backgroundRepeat: "no-repeat", // Évite la répétition de l'image
           }}
-          placeholder="Email"
-          value={email}
         />
-        {emailError && <span className="error">Enter a valid email</span>}
-        <button
-          className="login-button"
-          disabled={isLoginInProgress || email.length === 0}
-          onClick={handleLogin}
-        >
-          {isLoginInProgress ? (
-            <Spinner />
-          ) : isCreatingAccount ? (
-            "Sign Up"
-          ) : (
-            "Log In"
-          )}
-        </button>
-        <div>
-          {isCreatingAccount ? (
-            <p>
-              J'ai déjà un compte{" "}
-              <button
-                className="toggle-button"
-                onClick={() => setIsCreatingAccount(false)}
+        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+          <Box
+            sx={{
+              my: 8,
+              mx: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Image src={Logo} alt="Logo" width={140} height={140} />
+            <Typography component="h1" variant="h5">
+              Login / Sign Up
+            </Typography>
+            <Box component="form" noValidate sx={{ mt: 1 }}>
+              {isCreatingAccount && (
+                <>
+                  <TextField
+                    onChange={(e) => {
+                      if (firstNameError) setFirstNameError(false);
+                      setFirstName(e.target.value);
+                    }}
+                    placeholder="First Name"
+                    value={firstName}
+                    error={firstNameError}
+                    helperText={firstNameError && "First name is required"}
+                    fullWidth
+                    margin="normal"
+                  />
+                  <TextField
+                    onChange={(e) => {
+                      if (lastNameError) setLastNameError(false);
+                      setLastName(e.target.value);
+                    }}
+                    placeholder="Last Name"
+                    value={lastName}
+                    error={lastNameError}
+                    helperText={lastNameError && "Last name is required"}
+                    fullWidth
+                    margin="normal"
+                  />
+                </>
+              )}
+              <TextField
+                onChange={(e) => {
+                  if (emailError) setEmailError(false);
+                  setEmail(e.target.value);
+                }}
+                placeholder="Email"
+                value={email}
+                error={emailError}
+                helperText={emailError && "Enter a valid email"}
+                fullWidth
+                margin="normal"
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                disabled={isLoginInProgress || email.length === 0}
+                onClick={handleLogin}
+                fullWidth
+                sx={{ mt: 3, mb: 2 }}
               >
-                Login
-              </button>
-            </p>
-          ) : (
-            <p>
-              Créer un compte{" "}
-              <button
-                className="toggle-button"
-                onClick={() => setIsCreatingAccount(true)}
-              >
-                Sign Up
-              </button>
-            </p>
-          )}
-        </div>
-      </div>
-    </Card>
+                {isLoginInProgress ? (
+                  <Spinner />
+                ) : isCreatingAccount ? (
+                  "Sign Up"
+                ) : (
+                  "Log In"
+                )}
+              </Button>
+              <Grid container>
+                <Grid item xs>
+                  <Button
+                    onClick={() => setIsCreatingAccount(false)}
+                    variant="text"
+                  >
+                    Login
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button
+                    onClick={() => setIsCreatingAccount(true)}
+                    variant="text"
+                  >
+                    Sign Up
+                  </Button>
+                </Grid>
+              </Grid>
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
+    </ThemeProvider>
   );
 };
 

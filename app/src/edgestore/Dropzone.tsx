@@ -1,15 +1,43 @@
 "use client";
 import * as React from "react";
-import { useEdgeStore } from "../lib/edgestore";
 import { useState } from "react";
+import { useEdgeStore } from "../lib/edgestore";
 import { useDocumentContext } from "@/context/DocumentContext";
+import {
+  Button,
+  CircularProgress,
+  Typography,
+  Box,
+  IconButton,
+} from "@mui/material";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 export default function Dropzone() {
-  const [file, setFile] = useState<File>();
+  const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const { edgestore } = useEdgeStore();
   const { document, setDocument } = useDocumentContext();
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setFile(event.target.files[0]);
+    }
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer.files) {
+      setFile(event.dataTransfer.files[0]);
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
 
   const handleUpload = async () => {
     if (file) {
@@ -18,7 +46,6 @@ export default function Dropzone() {
         file,
         onProgressChange: (progress) => {
           setProgress(progress);
-          console.log(progress);
         },
       });
       setUploading(false);
@@ -35,31 +62,89 @@ export default function Dropzone() {
   };
 
   return (
-    <div className="flex flex-col items-center m-6 gap-2">
-      <input
-        type="file"
-        onChange={(e) => {
-          setFile(e.target.files?.[0]);
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 2,
+        p: 2,
+        border: "2px dashed #c49a2d", // Couleur de la bordure en accord avec votre thème
+        borderRadius: 2,
+        bgcolor: "#fff", // Couleur de fond pour un contraste net
+        maxWidth: 700,
+        mx: "auto",
+        mt: 4,
+        mb: 4,
+        position: "relative", // Position relative pour le conteneur
+        minHeight: 300,
+      }}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+    >
+      <IconButton
+        color="primary"
+        component="label"
+        sx={{
+          bgcolor: "#fff",
+          borderRadius: "50%",
+          p: 2,
+          boxShadow: 3,
+          "&:hover": {
+            bgcolor: "#f1f1f1",
+          },
+          marginTop: "10px",
         }}
-      />
-      <button
-        className="btn-primary px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
-        style={{ marginBottom: "10px" }}
+      >
+        <InsertDriveFileIcon
+          sx={{ fontSize: 40, color: "#000" }} // Icône noire
+        />
+        <input type="file" hidden onChange={handleFileSelect} />
+      </IconButton>
+      <Typography variant="body1" gutterBottom color="#000">
+        {file
+          ? `Selected file: ${file.name}`
+          : "Drag and drop or click to select a file"}
+      </Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        startIcon={<CloudUploadIcon sx={{ color: "#000" }} />}
         onClick={handleUpload}
-        disabled={uploading}
+        disabled={uploading || !file}
+        sx={{
+          mt: 1,
+          bgcolor: "#c49a2d", // Couleur de fond du bouton
+          color: "#000", // Couleur du texte du bouton
+          "&:hover": {
+            bgcolor: "#edc315", // Couleur du bouton au survol
+            color: "#000", // Couleur du texte au survol
+          },
+        }}
       >
         {uploading ? "Uploading..." : "Upload"}
-      </button>
+      </Button>
       {uploading && (
-        <div className="w-full bg-gray-200 rounded-full mt-4">
-          <div
-            className="bg-blue-500 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full"
-            style={{ width: `${progress}%` }}
-          >
-            {progress}%
-          </div>
-        </div>
+        <Box
+          sx={{
+            width: "100%",
+            mt: 2,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <CircularProgress
+            variant="determinate"
+            value={progress}
+            sx={{
+              color: "#000", // Couleur de la barre de progression
+              "& .MuiCircularProgress-circle": {
+                strokeLinecap: "round",
+              },
+            }}
+          />
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

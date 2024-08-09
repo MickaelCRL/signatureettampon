@@ -3,8 +3,56 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background-color: #5d3fd3; /* Couleur d'arrière-plan bleue */
+  background-color: #c49a2d;
   color: white;
+  position: fixed; /* Fixe le header en haut de la page */
+  width: 100%; /* Assure que le header occupe toute la largeur */
+  top: 0; /* Positionne le header en haut */
+  left: 0; /* Assure que le header est aligné à gauche */
+  z-index: 1000; /* Assure que le header reste au-dessus des autres éléments */
+}
+
+.headertransparent-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: transparent;
+  color: white;
+  position: fixed; /* Fixe le header en haut de la page */
+  width: 100%; /* Assure que le header occupe toute la largeur */
+  top: 0; /* Positionne le header en haut */
+  left: 0; /* Assure que le header est aligné à gauche */
+  z-index: 1000; /* Assure que le header reste au-dessus des autres éléments */
+}
+
+.logo-container {
+  flex: 1; /* Pour que le logo prenne moins de place */
+}
+
+.nav-menu {
+  flex: 2; /* Pour que le menu prenne plus de place */
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem; /* Espace entre les liens */
+}
+
+.nav-menu a {
+  text-decoration: none;
+  color: white; /* Couleur du texte */
+  font-family: "Poppins", sans-serif; /* Police à utiliser */
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.nav-menu a:hover {
+  color: none; /* Couleur au survol */
+}
+
+.account {
+  flex: 1; /* Pour que l'espace soit réparti */
+  display: flex;
+  justify-content: flex-end;
 }
 
 .header-title {

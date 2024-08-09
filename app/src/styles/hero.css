@@ -1,0 +1,20 @@
+.background-image {
+  background-image: url("/images/image-acceuil.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column; /* pour empiler les éléments verticalement */
+  align-items: center; /* centre horizontalement les éléments */
+  text-align: center;
+  color: white;
+  font-size: xx-large;
+}
